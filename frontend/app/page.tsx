@@ -30,7 +30,7 @@ import type {
   UserAccount,
 } from "./types";
 
-type Screen = ModuleId | "detail" | "confirmation" | "user-login" | "user-signup" | "user-portal";
+type Screen = ModuleId | "detail" | "confirmation" | "user-login" | "user-signup" | "user-portal" | "user-applications" | "user-account";
 type StatusFilter = "all" | ApplicationStatus;
 type ParsingFilter = "all" | ParsingStatus;
 
@@ -321,7 +321,6 @@ export default function Home() {
         {screen === "user-portal" && (
           <UserPortalModule
             activeJobs={jobPostings.filter((job) => job.status === "active")}
-            applicants={applicants.filter((applicant) => applicant.email === currentUser?.email)}
             currentUser={currentUser}
             setScreen={setScreen}
             startApplication={(jobId) => {
@@ -333,6 +332,18 @@ export default function Home() {
               setScreen("submission");
             }}
           />
+        )}
+
+        {screen === "user-applications" && (
+          <UserApplicationsModule
+            applicants={applicants.filter((applicant) => applicant.email === currentUser?.email)}
+            currentUser={currentUser}
+            setScreen={setScreen}
+          />
+        )}
+
+        {screen === "user-account" && (
+          <UserAccountModule currentUser={currentUser} setScreen={setScreen} />
         )}
 
         {screen === "submission" && (
@@ -453,10 +464,11 @@ function AppShell({
   const isAdminArea = Boolean(activeModule) || screen === "detail";
   const adminNav = modules.filter((module) => module.id !== "submission");
   const applicantNav = currentUser ? [
-    { label: "My Portal", screen: "user-portal" as Screen },
-    { label: "Submit Application", screen: "submission" as Screen },
+    { label: "Job postings", screen: "user-portal" as Screen },
+    { label: "My applications", screen: "user-applications" as Screen },
+    { label: "Account", screen: "user-account" as Screen },
   ] : [
-    { label: "Portal", screen: "user-portal" as Screen },
+    { label: "Job postings", screen: "user-portal" as Screen },
     { label: "Login", screen: "user-login" as Screen },
     { label: "Sign up", screen: "user-signup" as Screen },
   ];
@@ -599,13 +611,11 @@ function UserAuthModule({
 
 function UserPortalModule({
   activeJobs,
-  applicants,
   currentUser,
   setScreen,
   startApplication,
 }: {
   activeJobs: JobPosting[];
-  applicants: Applicant[];
   currentUser: UserAccount | null;
   setScreen: (screen: Screen) => void;
   startApplication: (jobId: string) => void;
@@ -614,12 +624,12 @@ function UserPortalModule({
     return (
       <ModulePage
         eyebrow="Applicant portal"
-        title="Start and track your application"
-        description="Create an applicant account first, then submit your CV and monitor the review status from one place."
+        title="Job postings"
+        description="Browse open roles. Sign in or create an account when you are ready to submit."
         action={
           <div className="flex flex-col gap-2 sm:flex-row">
             <button className="h-11 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white" onClick={() => setScreen("user-login")}>
-              Applicant login
+              Login
             </button>
             <button className="h-11 rounded-xl border border-zinc-200 px-4 text-sm font-semibold text-zinc-700" onClick={() => setScreen("user-signup")}>
               Create account
@@ -627,116 +637,193 @@ function UserPortalModule({
           </div>
         }
       >
-        <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-          <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-black tracking-tight">Applicant flow</h2>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <ProcessStep active title="1. Account" detail="Log in or sign up so every submission has an applicant profile." />
-              <ProcessStep title="2. Application" detail="Choose the active posting, complete the form, and attach a CV." />
-              <ProcessStep title="3. Status" detail="Return to the portal to see parsing and HR review progress." />
-              <ProcessStep title="4. Updates" detail="Status changes create simulated notification records for review." />
-            </div>
-          </section>
-
-          <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-black tracking-tight">Open postings</h2>
-            <div className="mt-5 space-y-3">
-              {activeJobs.map((job) => (
-                <div className="rounded-2xl bg-zinc-50 p-4" key={job.id}>
-                  <p className="font-black">{job.title}</p>
-                  <p className="mt-1 text-sm text-zinc-500">{job.department} - {job.location}</p>
-                  <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">Sign in to submit</p>
+        <section className="scroll-mt-32 rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm" id="applicant-jobs">
+          <div className="grid gap-3">
+            {activeJobs.map((job) => (
+              <article className="rounded-2xl border border-zinc-100 p-4" key={job.id}>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="text-xl font-black tracking-tight">{job.title}</h2>
+                    <p className="mt-1 text-sm text-zinc-500">
+                      {job.department} - {job.location} - {job.employmentType}
+                    </p>
+                    <p className="mt-3 text-sm text-zinc-600">{job.description}</p>
+                  </div>
+                  <button
+                    className="h-11 rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white"
+                    onClick={() => setScreen("user-login")}
+                  >
+                    Sign in to apply
+                  </button>
                 </div>
-              ))}
-            </div>
-          </section>
+              </article>
+            ))}
+          </div>
+        </section>
+      </ModulePage>
+    );
+  }
+
+  return (
+    <ModulePage
+      eyebrow="Applicant portal"
+      title="Job postings"
+      description="Choose an open role and submit your application."
+    >
+      <div className="space-y-5">
+        <section className="scroll-mt-32 rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm" id="applicant-jobs">
+          <div className="grid gap-3">
+            {activeJobs.map((job) => (
+              <article className="rounded-2xl border border-zinc-100 p-4 transition hover:border-violet-200 hover:bg-violet-50/40" key={job.id}>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="text-xl font-black tracking-tight">{job.title}</h2>
+                    <p className="mt-1 text-sm text-zinc-500">
+                      {job.department} - {job.location} - {job.employmentType}
+                    </p>
+                    <p className="mt-3 text-sm text-zinc-600">{job.description}</p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {job.requiredSkills.slice(0, 4).map((skill) => (
+                        <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-semibold text-zinc-700" key={skill}>
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-col gap-2 md:items-end">
+                    <Pill className={jobStatusTone[job.status]}>{job.status}</Pill>
+                    <p className="text-sm text-zinc-500">Closes {job.closingDate}</p>
+                    <button
+                      className="h-11 rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white"
+                      onClick={() => startApplication(job.id)}
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+      </div>
+    </ModulePage>
+  );
+}
+
+function UserApplicationsModule({
+  applicants,
+  currentUser,
+  setScreen,
+}: {
+  applicants: Applicant[];
+  currentUser: UserAccount | null;
+  setScreen: (screen: Screen) => void;
+}) {
+  if (!currentUser) {
+    return (
+      <ModulePage
+        eyebrow="Applicant portal"
+        title="My applications"
+        description="Log in to view submitted applications."
+        action={
+          <button className="h-11 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white" onClick={() => setScreen("user-login")}>
+            Login
+          </button>
+        }
+      >
+        <div className="rounded-[28px] border border-zinc-100 bg-white p-6 text-sm text-zinc-500 shadow-sm">
+          No applicant session is active.
         </div>
       </ModulePage>
     );
   }
 
-  const primaryJob = activeJobs[0];
+  return (
+    <ModulePage
+      eyebrow="Applicant portal"
+      title="My applications"
+      description="Track the status of applications you have submitted."
+      action={
+        <button className="h-11 rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white" onClick={() => setScreen("user-portal")}>
+          View job postings
+        </button>
+      }
+    >
+      <section className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
+        <div className="space-y-3">
+          {applicants.length ? (
+            applicants.map((applicant) => (
+              <article className="rounded-2xl border border-zinc-100 p-4" key={applicant.id}>
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="font-black">{applicant.cvFileName}</h2>
+                    <p className="mt-1 text-sm text-zinc-500">{applicant.id} - Submitted {applicant.appliedAt}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Pill className={statusTone[applicant.status]}>{statusLabels[applicant.status]}</Pill>
+                    <Pill className={parserTone[applicant.parsedProfile.parsingStatus]}>{parsingLabels[applicant.parsedProfile.parsingStatus]}</Pill>
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                  <ProcessStep active title="Submitted" detail="Record created" />
+                  <ProcessStep active={applicant.parsedProfile.parsingStatus !== "failed"} title="Parsing" detail={parsingLabels[applicant.parsedProfile.parsingStatus]} />
+                  <ProcessStep active={["shortlisted", "interview", "offer", "hired"].includes(applicant.status)} title="HR review" detail={statusLabels[applicant.status]} />
+                  <ProcessStep active={["offer", "hired"].includes(applicant.status)} title="Decision" detail="Final update" />
+                </div>
+              </article>
+            ))
+          ) : (
+            <div className="rounded-2xl bg-zinc-50 p-5 text-sm text-zinc-500">
+              No submitted applications yet.
+            </div>
+          )}
+        </div>
+      </section>
+    </ModulePage>
+  );
+}
+
+function UserAccountModule({
+  currentUser,
+  setScreen,
+}: {
+  currentUser: UserAccount | null;
+  setScreen: (screen: Screen) => void;
+}) {
+  if (!currentUser) {
+    return (
+      <ModulePage
+        eyebrow="Applicant portal"
+        title="Account"
+        description="Log in to view your applicant account."
+        action={
+          <button className="h-11 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white" onClick={() => setScreen("user-login")}>
+            Login
+          </button>
+        }
+      >
+        <div className="rounded-[28px] border border-zinc-100 bg-white p-6 text-sm text-zinc-500 shadow-sm">
+          No applicant session is active.
+        </div>
+      </ModulePage>
+    );
+  }
 
   return (
     <ModulePage
       eyebrow="Applicant portal"
-      title="Apply and track your screening status"
-      description={`Welcome, ${currentUser.name}. Submit an application and track the current review step.`}
-      action={
-        <button
-          className="h-11 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white disabled:bg-zinc-300"
-          disabled={!primaryJob}
-          onClick={() => primaryJob && startApplication(primaryJob.id)}
-        >
-          Start application
-        </button>
-      }
+      title="Account"
+      description="Applicant account details for this frontend-only prototype."
     >
-      <div className="grid items-start gap-5 xl:grid-cols-[1fr_340px]">
-        <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-xl font-black tracking-tight">My applications</h2>
-              <p className="mt-1 text-sm text-zinc-500">A compact view of your submitted applications.</p>
-            </div>
-            <Pill className="bg-zinc-100 text-zinc-700">{applicants.length} submitted</Pill>
-          </div>
-          <div className="mt-5 space-y-3">
-            {applicants.length ? (
-              applicants.map((applicant) => (
-                <div className="rounded-2xl border border-zinc-100 bg-white p-4" key={applicant.id}>
-                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                    <button className="text-left" type="button">
-                      <p className="font-black">{applicant.cvFileName}</p>
-                      <p className="mt-1 text-sm text-zinc-500">{applicant.id} - Submitted {applicant.appliedAt}</p>
-                    </button>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Pill className={statusTone[applicant.status]}>{statusLabels[applicant.status]}</Pill>
-                      <Pill className={parserTone[applicant.parsedProfile.parsingStatus]}>{parsingLabels[applicant.parsedProfile.parsingStatus]}</Pill>
-                    </div>
-                  </div>
-                  <details className="mt-3 rounded-xl bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
-                    <summary className="cursor-pointer font-semibold text-zinc-800">View timeline</summary>
-                    <div className="mt-3 grid gap-2 sm:grid-cols-4">
-                      <ProcessStep active title="Submitted" detail="Record created" />
-                      <ProcessStep active={applicant.parsedProfile.parsingStatus !== "failed"} title="Parsing" detail={parsingLabels[applicant.parsedProfile.parsingStatus]} />
-                      <ProcessStep active={["shortlisted", "interview", "offer", "hired"].includes(applicant.status)} title="HR review" detail={statusLabels[applicant.status]} />
-                      <ProcessStep active={["offer", "hired"].includes(applicant.status)} title="Decision" detail="Final update" />
-                    </div>
-                  </details>
-                </div>
-              ))
-            ) : (
-              <div className="rounded-2xl bg-zinc-50 p-5 text-sm text-zinc-500">
-                No submitted applications yet. Choose an active posting to start.
-              </div>
-            )}
-          </div>
-        </section>
-
-        <aside className="space-y-5">
-          <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-black tracking-tight">Open posting</h2>
-            <div className="mt-5 space-y-3">
-              {activeJobs.map((job) => (
-                <button className="w-full rounded-2xl bg-zinc-50 p-4 text-left hover:bg-violet-50" key={job.id} onClick={() => startApplication(job.id)}>
-                  <p className="font-black">{job.title}</p>
-                  <p className="mt-1 text-sm text-zinc-500">{job.department} - {job.employmentType}</p>
-                  <p className="mt-3 text-sm text-zinc-500">{job.location} - closes {job.closingDate}</p>
-                  <p className="mt-4 text-sm font-semibold text-violet-700">Open application form</p>
-                </button>
-              ))}
-            </div>
-          </section>
-          <details className="rounded-[28px] border border-zinc-100 bg-white p-6 text-sm shadow-sm">
-            <summary className="cursor-pointer text-xl font-black tracking-tight">Account</summary>
-            <div className="mt-4 space-y-3">
-              <InfoTile label="Name" value={currentUser.name} />
-              <InfoTile label="Email" value={currentUser.email} />
-            </div>
-          </details>
-        </aside>
-      </div>
+      <section className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <InfoTile label="Name" value={currentUser.name} />
+          <InfoTile label="Email" value={currentUser.email} />
+          <InfoTile label="Role" value={currentUser.role} />
+          <InfoTile label="Created" value={currentUser.createdAt} />
+        </div>
+      </section>
     </ModulePage>
   );
 }
