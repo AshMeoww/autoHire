@@ -451,6 +451,7 @@ function AppShell({
   setScreen: (screen: Screen) => void;
 }) {
   const isAdminArea = Boolean(activeModule) || screen === "detail";
+  const adminNav = modules.filter((module) => module.id !== "submission");
   const applicantNav = currentUser ? [
     { label: "My Portal", screen: "user-portal" as Screen },
     { label: "Submit Application", screen: "submission" as Screen },
@@ -463,84 +464,35 @@ function AppShell({
   return (
     <div className="mx-auto min-h-screen max-w-[1480px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
       <header className="sticky top-0 z-30 border-b border-zinc-100 bg-white/95 backdrop-blur">
-        <div className="flex flex-col gap-4 px-4 py-4 sm:px-6 xl:flex-row xl:items-center xl:justify-between">
-          <button className="flex items-center gap-3 text-left" onClick={() => setScreen("user-portal")}>
-            <span className="grid h-10 w-10 place-items-center rounded-xl bg-zinc-950 text-sm font-black text-white">
-              A
-            </span>
-            <span>
-              <span className="block text-xl font-black tracking-tight">AutoMotion</span>
-              <span className="block text-xs text-zinc-500">Application Screening System</span>
-            </span>
-          </button>
+        <div className="px-4 py-3 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <button className="flex min-w-0 items-center gap-3 text-left" onClick={() => setScreen("user-portal")}>
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-zinc-950 text-sm font-black text-white">
+                A
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-lg font-black tracking-tight sm:text-xl">AutoMotion</span>
+                <span className="block truncate text-xs text-zinc-500">Application Screening System</span>
+              </span>
+            </button>
 
-          <nav className="flex gap-1 overflow-x-auto rounded-2xl bg-zinc-50 p-1">
-            {isAdminArea
-              ? modules
-                  .filter((module) => module.id !== "submission")
-                  .map((module) => (
-                    <button
-                      className={`h-10 shrink-0 rounded-xl px-4 text-sm font-medium transition ${
-                        activeModule === module.id || (module.id === "reporting" && screen === "detail")
-                          ? "bg-white text-violet-700 shadow-sm"
-                          : "text-zinc-600 hover:bg-white hover:text-zinc-950"
-                      }`}
-                      key={module.id}
-                      onClick={() => setScreen(module.id)}
-                      title={module.eyebrow}
-                    >
-                      {module.label}
-                    </button>
-                  ))
-              : applicantNav.map((item) => (
-                  <button
-                    className={`h-10 shrink-0 rounded-xl px-4 text-sm font-medium transition ${
-                      screen === item.screen
-                        ? "bg-white text-violet-700 shadow-sm"
-                        : "text-zinc-600 hover:bg-white hover:text-zinc-950"
-                    }`}
-                    key={item.label}
-                    onClick={() => setScreen(item.screen)}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-          </nav>
-
-          <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2">
             <button
-              className={`h-10 rounded-xl px-3 text-sm font-semibold ${
+              className={`h-10 rounded-xl px-3 text-sm font-semibold transition ${
                 isAdminArea ? "bg-zinc-950 text-white" : "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
               }`}
               onClick={() => setScreen(isAdminArea ? "user-portal" : "reporting")}
             >
               {isAdminArea ? "Applicant portal" : "Admin review"}
             </button>
-            {currentUser ? (
+            {!currentUser && !isAdminArea ? (
               <button
-                className="rounded-2xl border border-violet-100 bg-violet-50 px-3 py-2 text-left"
-                onClick={() => setScreen("user-portal")}
-              >
-                <span className="block text-sm font-semibold text-violet-800">{currentUser.name}</span>
-                <span className="block text-xs text-violet-600">Applicant portal</span>
-              </button>
-            ) : (
-              <button
-                className="h-10 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white"
+                className="hidden h-10 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white sm:block"
                 onClick={() => setScreen("user-login")}
               >
-                User login
+                Login
               </button>
-            )}
-            <div className="flex items-center gap-3 rounded-2xl border border-zinc-100 px-3 py-2">
-              <span className="grid h-9 w-9 place-items-center rounded-full bg-violet-100 text-sm font-black text-violet-700">
-                HR
-              </span>
-              <span className="hidden sm:block">
-                <span className="block text-sm font-semibold">{isAdminArea ? "Admin Portal" : "Hiring Team"}</span>
-                <span className="block text-xs text-zinc-500">{isAdminArea ? "Submissions workflow" : "Reviewer access"}</span>
-              </span>
-            </div>
+            ) : null}
             {currentUser && (
               <button
                 className="hidden h-10 rounded-xl border border-zinc-200 px-3 text-sm font-semibold text-zinc-600 sm:block"
@@ -549,7 +501,34 @@ function AppShell({
                 Log out
               </button>
             )}
+            </div>
           </div>
+
+          <nav
+            className="mt-3 flex gap-1 overflow-x-auto border-t border-zinc-100 pt-3"
+            aria-label={isAdminArea ? "Admin modules" : "Applicant portal"}
+          >
+            {(isAdminArea ? adminNav : applicantNav).map((item) => {
+              const itemScreen = "id" in item ? item.id : item.screen;
+              const isActive =
+                isAdminArea && "id" in item
+                  ? activeModule === item.id || (item.id === "reporting" && screen === "detail")
+                  : screen === itemScreen;
+
+              return (
+                <button
+                  className={`h-9 shrink-0 rounded-xl px-3 text-sm font-medium transition sm:px-4 ${
+                    isActive ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
+                  }`}
+                  key={"id" in item ? item.id : item.label}
+                  onClick={() => setScreen(itemScreen)}
+                  title={"eyebrow" in item ? item.eyebrow : undefined}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </nav>
         </div>
       </header>
       {children}
