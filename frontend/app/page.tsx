@@ -474,50 +474,54 @@ function AppShell({
   ];
 
   return (
-    <div className="mx-auto min-h-screen max-w-[1480px] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
+    <div className="mx-auto min-h-screen max-w-[1480px] bg-white sm:shadow-[0_24px_80px_rgba(15,23,42,0.08)]">
       <header className="sticky top-0 z-30 border-b border-zinc-100 bg-white/95 backdrop-blur">
-        <div className="px-4 py-3 sm:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <button className="flex min-w-0 items-center gap-3 text-left" onClick={() => setScreen("user-portal")}>
-              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-zinc-950 text-sm font-black text-white">
+        <div className="px-3 py-3 sm:px-6">
+          <div className="flex items-center justify-between gap-2">
+            <button className="flex min-w-0 flex-1 items-center gap-2 text-left sm:gap-3" onClick={() => setScreen("user-portal")}>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-zinc-950 text-sm font-black text-white sm:h-10 sm:w-10">
                 A
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-lg font-black tracking-tight sm:text-xl">AutoHire</span>
-                <span className="block truncate text-xs text-zinc-500">Recruitment Management System with Applicant Screening</span>
+                <span className="hidden truncate text-xs text-zinc-500 sm:block">Recruitment Management System with Applicant Screening</span>
               </span>
             </button>
 
-            <div className="flex min-w-0 items-center gap-2">
-            <button
-              className={`h-10 rounded-xl px-3 text-sm font-semibold transition ${
-                isAdminArea ? "bg-zinc-950 text-white" : "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
-              }`}
-              onClick={() => setScreen(isAdminArea ? "user-portal" : "reporting")}
-            >
-              {isAdminArea ? "Applicant portal" : "Admin review"}
-            </button>
-            {!currentUser && !isAdminArea ? (
+            <div className="flex shrink-0 items-center gap-2">
               <button
-                className="hidden h-10 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white sm:block"
-                onClick={() => setScreen("user-login")}
+                className={`h-9 rounded-xl px-2.5 text-xs font-semibold transition sm:h-10 sm:px-3 sm:text-sm ${
+                  isAdminArea ? "bg-zinc-950 text-white" : "border border-zinc-200 text-zinc-700 hover:bg-zinc-50"
+                }`}
+                onClick={() => setScreen(isAdminArea ? "user-portal" : "reporting")}
               >
-                Login
+                {isAdminArea ? "Applicant" : "Admin"}
               </button>
-            ) : null}
-            {currentUser && (
-              <button
-                className="hidden h-10 rounded-xl border border-zinc-200 px-3 text-sm font-semibold text-zinc-600 sm:block"
-                onClick={() => setCurrentUser(null)}
-              >
-                Log out
-              </button>
-            )}
+              {!currentUser && !isAdminArea ? (
+                <button
+                  className="hidden h-10 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white sm:block"
+                  onClick={() => setScreen("user-login")}
+                >
+                  Login
+                </button>
+              ) : null}
+              {currentUser && (
+                <button
+                  className="hidden h-10 rounded-xl border border-zinc-200 px-3 text-sm font-semibold text-zinc-600 sm:block"
+                  onClick={() => setCurrentUser(null)}
+                >
+                  Log out
+                </button>
+              )}
             </div>
           </div>
 
           <nav
-            className="mt-3 flex gap-1 overflow-x-auto border-t border-zinc-100 pt-3"
+            className={
+              isAdminArea
+                ? "hide-scrollbar mt-3 flex gap-1 overflow-x-auto border-t border-zinc-100 pt-3"
+                : "mt-3 grid grid-cols-3 gap-1 border-t border-zinc-100 pt-3"
+            }
             aria-label={isAdminArea ? "Admin modules" : "Applicant portal"}
           >
             {(isAdminArea ? adminNav : applicantNav).map((item) => {
@@ -529,7 +533,7 @@ function AppShell({
 
               return (
                 <button
-                  className={`h-9 shrink-0 rounded-xl px-3 text-sm font-medium transition sm:px-4 ${
+                  className={`h-9 shrink-0 truncate rounded-xl px-2 text-xs font-medium transition sm:px-4 sm:text-sm ${
                     isActive ? "bg-zinc-950 text-white" : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
                   }`}
                   key={"id" in item ? item.id : item.label}
@@ -671,13 +675,13 @@ function UserPortalModule({
       description="Choose an open role and submit your application."
     >
       <div className="space-y-5">
-        <section className="scroll-mt-32 rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm" id="applicant-jobs">
+        <section className="scroll-mt-32 rounded-2xl border border-zinc-100 bg-white p-3 shadow-sm sm:rounded-[28px] sm:p-5" id="applicant-jobs">
           <div className="grid gap-3">
             {activeJobs.map((job) => (
               <article className="rounded-2xl border border-zinc-100 p-4 transition hover:border-violet-200 hover:bg-violet-50/40" key={job.id}>
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div>
-                    <h2 className="text-xl font-black tracking-tight">{job.title}</h2>
+                    <h2 className="text-lg font-black tracking-tight sm:text-xl">{job.title}</h2>
                     <p className="mt-1 text-sm text-zinc-500">
                       {job.department} - {job.location} - {job.employmentType}
                     </p>
@@ -690,11 +694,13 @@ function UserPortalModule({
                       ))}
                     </div>
                   </div>
-                  <div className="flex shrink-0 flex-col gap-2 md:items-end">
-                    <Pill className={jobStatusTone[job.status]}>{job.status}</Pill>
-                    <p className="text-sm text-zinc-500">Closes {job.closingDate}</p>
+                  <div className="flex shrink-0 flex-col gap-3 md:items-end">
+                    <div className="flex items-center justify-between gap-3 md:flex-col md:items-end">
+                      <Pill className={jobStatusTone[job.status]}>{job.status}</Pill>
+                      <p className="text-sm text-zinc-500">Closes {job.closingDate}</p>
+                    </div>
                     <button
-                      className="h-11 rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white"
+                      className="h-11 w-full rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white md:w-auto"
                       onClick={() => startApplication(job.id)}
                     >
                       Apply
@@ -750,7 +756,7 @@ function UserApplicationsModule({
         </button>
       }
     >
-      <section className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
+      <section className="rounded-2xl border border-zinc-100 bg-white p-3 shadow-sm sm:rounded-[28px] sm:p-5">
         <div className="space-y-3">
           {applicants.length ? (
             applicants.map((applicant) => (
@@ -846,9 +852,9 @@ function SubmissionModule({
   submittedName: string;
 }) {
   return (
-    <section className="bg-[#fbfbfd] p-4 sm:p-6">
-      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[360px_1fr]">
-        <aside className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
+    <section className="bg-[#fbfbfd] p-3 sm:p-6">
+      <div className="mx-auto grid max-w-6xl gap-4 lg:grid-cols-[320px_1fr] xl:grid-cols-[360px_1fr]">
+        <aside className="rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm sm:rounded-[28px] sm:p-6">
           <button
             className="h-10 rounded-xl border border-zinc-200 px-3 text-sm font-semibold text-zinc-700 hover:bg-zinc-50"
             onClick={() => setScreen("user-portal")}
@@ -857,11 +863,11 @@ function SubmissionModule({
             Back to portal
           </button>
           <p className="mt-6 text-sm font-semibold text-violet-700">Applicant submission</p>
-          <h1 className="mt-2 text-3xl font-black tracking-tight">Complete your application</h1>
+          <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">Complete your application</h1>
           <p className="mt-4 text-sm leading-6 text-zinc-500">
             The form collects the structured details HR needs before the CV parser and scoring modules run.
           </p>
-          <div className="mt-8 space-y-3">
+          <div className="mt-6 hidden space-y-3 sm:block">
             <ProcessStep active title="1. Profile" detail="Contact, location, education, and experience." />
             <ProcessStep active title="2. CV" detail="Upload reference and parsing state simulation." />
             <ProcessStep active title="3. Questions" detail="Role-specific supplementary answers." />
@@ -869,7 +875,7 @@ function SubmissionModule({
           </div>
         </aside>
 
-        <form className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm sm:p-7" onSubmit={onSubmit}>
+        <form className="rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm sm:rounded-[28px] sm:p-7" onSubmit={onSubmit}>
           <ModuleHeader
             eyebrow="Application form"
             title={activeJob.title}
@@ -1213,16 +1219,16 @@ function ReportingModule({
   viewApplicant: (id: string) => void;
 }) {
   return (
-    <section className="min-h-[calc(100vh-82px)] bg-[#fbfbfd] p-4 sm:p-6">
+    <section className="min-h-[calc(100vh-82px)] bg-[#fbfbfd] p-3 sm:p-6">
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
+        <div className="rounded-2xl border border-zinc-100 bg-white p-4 shadow-sm sm:rounded-[28px] sm:p-5">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <ModuleHeader
               eyebrow="Admin portal"
               title="Submissions dashboard"
               description={`Review every application for ${activeJob.title}, then move through parsing, scoring, decisions, notifications, and reports.`}
             />
-            <div className="flex flex-col gap-2 sm:flex-row">
+            <div className="grid gap-2 sm:grid-cols-2 md:flex md:shrink-0">
               <button
                 className="h-11 rounded-xl border border-zinc-200 px-4 text-sm font-semibold"
                 onClick={() => setScreen("screening")}
@@ -1237,7 +1243,7 @@ function ReportingModule({
               </button>
             </div>
           </div>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
             <MetricTile label="Candidates" value={metrics.total.toString()} />
             <MetricTile label="Visible" value={metrics.visible.toString()} />
             <MetricTile label="Avg. score" value={`${metrics.averageScore}%`} />
@@ -1273,7 +1279,7 @@ function ReportingModule({
               </Field>
             </div>
             <button
-              className="h-11 rounded-xl border border-zinc-200 px-4 text-sm font-semibold text-zinc-700"
+              className="h-11 rounded-xl border border-zinc-200 px-4 text-sm font-semibold text-zinc-700 xl:self-end"
               onClick={() => {
                 setQuery("");
                 setStatusFilter("all");
@@ -1286,7 +1292,7 @@ function ReportingModule({
           </div>
         </div>
 
-        <div className="mt-5 space-y-3">
+        <div className="mt-4 space-y-3 sm:mt-5">
           {applicants.map((applicant, index) => (
             <CandidateCard
               applicant={applicant}
@@ -1711,13 +1717,13 @@ function CandidateCard({
     .slice(0, 2);
 
   return (
-    <article className="rounded-[22px] border border-zinc-100 bg-white p-4 shadow-sm transition hover:shadow-md">
+    <article className="rounded-2xl border border-zinc-100 bg-white p-3 shadow-sm transition hover:shadow-md sm:rounded-[22px] sm:p-4">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-zinc-50 text-xs font-black text-zinc-500">
+        <div className="flex min-w-0 items-start gap-3 sm:items-center">
+          <div className="hidden h-9 w-9 shrink-0 place-items-center rounded-xl bg-zinc-50 text-xs font-black text-zinc-500 sm:grid">
             #{rank}
           </div>
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-zinc-100 text-sm font-black text-zinc-600">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-zinc-100 text-sm font-black text-zinc-600 sm:h-11 sm:w-11">
             {initials}
           </div>
           <div className="min-w-0">
@@ -1733,18 +1739,18 @@ function CandidateCard({
                 {parsingLabels[applicant.parsedProfile.parsingStatus]}
               </Pill>
             </div>
-            <p className="mt-1 text-sm text-zinc-500">
+            <p className="mt-1 break-words text-sm text-zinc-500">
               {applicant.email} - {applicant.parsedProfile.experienceYears} years - {applicant.source}
             </p>
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="grid gap-3 sm:grid-cols-[auto_1fr_auto] sm:items-center xl:flex xl:flex-row">
           <p className="text-sm text-zinc-500">
             Match score: <span className={`text-base font-black ${scoreClass(score)}`}>{score}%</span>
           </p>
           <select
-            className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-sm font-semibold outline-none focus:border-violet-400"
+            className="h-10 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-semibold outline-none focus:border-violet-400 sm:w-auto"
             value={applicant.status}
             onChange={(event) => updateApplicantStatus(applicant.id, event.target.value as ApplicationStatus)}
           >
@@ -1755,7 +1761,7 @@ function CandidateCard({
             ))}
           </select>
           <button
-            className="h-10 rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white"
+            className="h-10 w-full rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white sm:w-auto"
             onClick={() => selectApplicant(applicant.id)}
           >
             Review
@@ -1931,9 +1937,9 @@ function ModulePage({
   title: string;
 }) {
   return (
-    <section className="bg-[#fbfbfd] p-4 sm:p-6">
+    <section className="bg-[#fbfbfd] p-3 sm:p-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-end sm:justify-between">
           <ModuleHeader description={description} eyebrow={eyebrow} title={title} />
           {action}
         </div>
@@ -1955,7 +1961,7 @@ function ModuleHeader({
   return (
     <div>
       <p className="text-sm font-semibold text-violet-700">{eyebrow}</p>
-      <h1 className="mt-1 text-3xl font-black tracking-tight">{title}</h1>
+      <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">{title}</h1>
       <p className="mt-1 max-w-3xl text-sm leading-6 text-zinc-500">{description}</p>
     </div>
   );
@@ -2037,25 +2043,25 @@ function ThresholdInput({
 
 function MetricTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-zinc-100">
+    <div className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-zinc-100 sm:p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{label}</p>
-      <p className="mt-2 text-2xl font-black">{value}</p>
+      <p className="mt-1 text-xl font-black sm:mt-2 sm:text-2xl">{value}</p>
     </div>
   );
 }
 
 function InfoTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-zinc-50 p-4">
+    <div className="rounded-2xl bg-zinc-50 p-3 sm:p-4">
       <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{label}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
+      <p className="mt-1 break-words text-sm font-semibold">{value}</p>
     </div>
   );
 }
 
 function ProcessStep({ active = false, detail, title }: { active?: boolean; detail: string; title: string }) {
   return (
-    <div className={`rounded-2xl p-4 ${active ? "bg-violet-50" : "bg-zinc-50"}`}>
+    <div className={`rounded-2xl p-3 sm:p-4 ${active ? "bg-violet-50" : "bg-zinc-50"}`}>
       <p className={`text-sm font-black ${active ? "text-violet-700" : "text-zinc-600"}`}>{title}</p>
       <p className="mt-2 text-sm text-zinc-500">{detail}</p>
     </div>
