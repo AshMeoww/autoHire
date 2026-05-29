@@ -1197,13 +1197,6 @@ function ReportingModule({
               Clear filters
             </button>
           </div>
-          <div className="mt-5 grid gap-3 md:grid-cols-5">
-            <FlowButton label="Submissions" active onClick={() => setScreen("reporting")} />
-            <FlowButton label="Parse CVs" onClick={() => setScreen("parsing")} />
-            <FlowButton label="Score & rank" onClick={() => setScreen("screening")} />
-            <FlowButton label="Decide" onClick={() => setScreen("screening")} />
-            <FlowButton label="Notify" onClick={() => setScreen("notifications")} />
-          </div>
         </div>
 
         <div className="mt-5 space-y-3">
@@ -1979,19 +1972,5 @@ function ProcessStep({ active = false, detail, title }: { active?: boolean; deta
       <p className={`text-sm font-black ${active ? "text-violet-700" : "text-zinc-600"}`}>{title}</p>
       <p className="mt-2 text-sm text-zinc-500">{detail}</p>
     </div>
-  );
-}
-
-function FlowButton({ active = false, label, onClick }: { active?: boolean; label: string; onClick: () => void }) {
-  return (
-    <button
-      className={`h-12 rounded-2xl px-3 text-left text-sm font-semibold transition ${
-        active ? "bg-zinc-950 text-white" : "bg-zinc-50 text-zinc-700 hover:bg-violet-50 hover:text-violet-700"
-      }`}
-      onClick={onClick}
-      type="button"
-    >
-      {label}
-    </button>
   );
 }
