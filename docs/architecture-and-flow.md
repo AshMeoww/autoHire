@@ -1,4 +1,4 @@
-﻿# AutoHire
+# AutoHire Architecture And Flow Diagrams
 
 AutoHire is a Recruitment Management System with Applicant Screening. The current prototype is frontend-only: all screens, actions, scoring, notifications, reports, and data updates are simulated in the React UI with local mock TypeScript data.
 
@@ -190,6 +190,3 @@ flowchart TD
 | Notifications | Simulates status-triggered message templates and delivery logs. |
 | Reports And Analytics | Shows score/source summaries and export preview without generating real files. |
 
-## Additional Documentation
-
-The standalone diagram document is also available at [docs/architecture-and-flow.md](docs/architecture-and-flow.md).
