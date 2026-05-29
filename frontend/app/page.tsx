@@ -661,7 +661,7 @@ function UserPortalModule({
     <ModulePage
       eyebrow="Applicant portal"
       title="Apply and track your screening status"
-      description={`Welcome, ${currentUser.name}. Start with the application form, then return here for parser status and HR review updates.`}
+      description={`Welcome, ${currentUser.name}. Submit an application and track the current review step.`}
       action={
         <button
           className="h-11 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white disabled:bg-zinc-300"
@@ -672,42 +672,38 @@ function UserPortalModule({
         </button>
       }
     >
-      <div className="grid items-start gap-5 xl:grid-cols-[1fr_360px]">
+      <div className="grid items-start gap-5 xl:grid-cols-[1fr_340px]">
         <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-black tracking-tight">My applications</h2>
-              <p className="mt-1 text-sm text-zinc-500">Each card shows where your submission sits in the screening pipeline.</p>
+              <p className="mt-1 text-sm text-zinc-500">A compact view of your submitted applications.</p>
             </div>
             <Pill className="bg-zinc-100 text-zinc-700">{applicants.length} submitted</Pill>
           </div>
           <div className="mt-5 space-y-3">
             {applicants.length ? (
               applicants.map((applicant) => (
-                <div className="rounded-2xl bg-zinc-50 p-4" key={applicant.id}>
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
+                <div className="rounded-2xl border border-zinc-100 bg-white p-4" key={applicant.id}>
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <button className="text-left" type="button">
                       <p className="font-black">{applicant.cvFileName}</p>
-                      <p className="mt-1 text-sm text-zinc-500">Submitted {applicant.appliedAt}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
+                      <p className="mt-1 text-sm text-zinc-500">{applicant.id} - Submitted {applicant.appliedAt}</p>
+                    </button>
+                    <div className="flex flex-wrap items-center gap-2">
                       <Pill className={statusTone[applicant.status]}>{statusLabels[applicant.status]}</Pill>
-                      <Pill className={parserTone[applicant.parsedProfile.parsingStatus]}>
-                        {parsingLabels[applicant.parsedProfile.parsingStatus]}
-                      </Pill>
+                      <Pill className={parserTone[applicant.parsedProfile.parsingStatus]}>{parsingLabels[applicant.parsedProfile.parsingStatus]}</Pill>
                     </div>
                   </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <InfoTile label="Application ID" value={applicant.id} />
-                    <InfoTile label="Current step" value={applicant.parsedProfile.parsingStatus === "parsed" ? "HR scoring" : "CV parsing"} />
-                    <InfoTile label="Source" value={applicant.source} />
-                  </div>
-                  <div className="mt-4 grid gap-2 sm:grid-cols-4">
-                    <ProcessStep active title="Submitted" detail="Record created" />
-                    <ProcessStep active={applicant.parsedProfile.parsingStatus !== "failed"} title="Parsing" detail={parsingLabels[applicant.parsedProfile.parsingStatus]} />
-                    <ProcessStep active={["shortlisted", "interview", "offer", "hired"].includes(applicant.status)} title="HR review" detail={statusLabels[applicant.status]} />
-                    <ProcessStep active={["offer", "hired"].includes(applicant.status)} title="Decision" detail="Final update" />
-                  </div>
+                  <details className="mt-3 rounded-xl bg-zinc-50 px-3 py-2 text-sm text-zinc-600">
+                    <summary className="cursor-pointer font-semibold text-zinc-800">View timeline</summary>
+                    <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                      <ProcessStep active title="Submitted" detail="Record created" />
+                      <ProcessStep active={applicant.parsedProfile.parsingStatus !== "failed"} title="Parsing" detail={parsingLabels[applicant.parsedProfile.parsingStatus]} />
+                      <ProcessStep active={["shortlisted", "interview", "offer", "hired"].includes(applicant.status)} title="HR review" detail={statusLabels[applicant.status]} />
+                      <ProcessStep active={["offer", "hired"].includes(applicant.status)} title="Decision" detail="Final update" />
+                    </div>
+                  </details>
                 </div>
               ))
             ) : (
@@ -720,29 +716,25 @@ function UserPortalModule({
 
         <aside className="space-y-5">
           <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-black tracking-tight">Apply to a job</h2>
+            <h2 className="text-xl font-black tracking-tight">Open posting</h2>
             <div className="mt-5 space-y-3">
               {activeJobs.map((job) => (
                 <button className="w-full rounded-2xl bg-zinc-50 p-4 text-left hover:bg-violet-50" key={job.id} onClick={() => startApplication(job.id)}>
                   <p className="font-black">{job.title}</p>
                   <p className="mt-1 text-sm text-zinc-500">{job.department} - {job.employmentType}</p>
-                  <div className="mt-4 grid gap-2">
-                    <InfoTile label="Location" value={job.location} />
-                    <InfoTile label="Closes" value={job.closingDate} />
-                  </div>
-                  <p className="mt-3 text-sm font-semibold text-violet-700">Open application form</p>
+                  <p className="mt-3 text-sm text-zinc-500">{job.location} - closes {job.closingDate}</p>
+                  <p className="mt-4 text-sm font-semibold text-violet-700">Open application form</p>
                 </button>
               ))}
             </div>
           </section>
-          <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-            <h2 className="text-xl font-black tracking-tight">Account</h2>
+          <details className="rounded-[28px] border border-zinc-100 bg-white p-6 text-sm shadow-sm">
+            <summary className="cursor-pointer text-xl font-black tracking-tight">Account</summary>
             <div className="mt-4 space-y-3">
               <InfoTile label="Name" value={currentUser.name} />
               <InfoTile label="Email" value={currentUser.email} />
-              <InfoTile label="Created" value={currentUser.createdAt} />
             </div>
-          </section>
+          </details>
         </aside>
       </div>
     </ModulePage>
@@ -1134,19 +1126,8 @@ function ReportingModule({
   viewApplicant: (id: string) => void;
 }) {
   return (
-    <section className="grid min-h-[calc(100vh-82px)] lg:grid-cols-[280px_1fr]">
-      <ReportingFilters
-        applicants={allApplicants}
-        parsingFilter={parsingFilter}
-        query={query}
-        setParsingFilter={setParsingFilter}
-        setQuery={setQuery}
-        setStatusFilter={setStatusFilter}
-        setThreshold={setThreshold}
-        statusFilter={statusFilter}
-        threshold={threshold}
-      />
-      <div className="border-l border-zinc-100 bg-[#fbfbfd] p-4 sm:p-6">
+    <section className="min-h-[calc(100vh-82px)] bg-[#fbfbfd] p-4 sm:p-6">
+      <div className="mx-auto max-w-7xl">
         <div className="rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <ModuleHeader
@@ -1165,7 +1146,7 @@ function ReportingModule({
                 className="h-11 rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white"
                 onClick={() => setScreen("submission")}
               >
-                Add candidate
+              Add candidate
               </button>
             </div>
           </div>
@@ -1175,38 +1156,75 @@ function ReportingModule({
             <MetricTile label="Avg. score" value={`${metrics.averageScore}%`} />
             <MetricTile label="Parser queue" value={metrics.parsingQueue.toString()} />
           </div>
+          <div className="mt-5 grid gap-3 xl:grid-cols-[1fr_auto]">
+            <div className="grid gap-3 md:grid-cols-4">
+              <Field label="Search">
+                <input className="ui-input" onChange={(event) => setQuery(event.target.value)} placeholder="Name, skill, source..." value={query} />
+              </Field>
+              <Field label="Status">
+                <select className="ui-input bg-white" onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} value={statusFilter}>
+                  <option value="all">All statuses</option>
+                  {applicationStatuses.map((status) => (
+                    <option key={status} value={status}>{statusLabels[status]}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Parsing">
+                <select className="ui-input bg-white" onChange={(event) => setParsingFilter(event.target.value as ParsingFilter)} value={parsingFilter}>
+                  <option value="all">All parser states</option>
+                  {parsingStatuses.map((status) => (
+                    <option key={status} value={status}>{parsingLabels[status]}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field label="Minimum score">
+                <select className="ui-input bg-white" onChange={(event) => setThreshold(Number(event.target.value))} value={threshold}>
+                  {[50, 60, 70, 75, 80, 85, 90].map((value) => (
+                    <option key={value} value={value}>{value}% and up</option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+            <button
+              className="h-11 rounded-xl border border-zinc-200 px-4 text-sm font-semibold text-zinc-700"
+              onClick={() => {
+                setQuery("");
+                setStatusFilter("all");
+                setParsingFilter("all");
+                setThreshold(75);
+              }}
+            >
+              Clear filters
+            </button>
+          </div>
           <div className="mt-5 grid gap-3 md:grid-cols-5">
-            <FlowButton label="1. Submissions" active onClick={() => setScreen("reporting")} />
-            <FlowButton label="2. Parse CVs" onClick={() => setScreen("parsing")} />
-            <FlowButton label="3. Score & rank" onClick={() => setScreen("screening")} />
-            <FlowButton label="4. Decide" onClick={() => setScreen("screening")} />
-            <FlowButton label="5. Notify/export" onClick={() => setScreen("notifications")} />
+            <FlowButton label="Submissions" active onClick={() => setScreen("reporting")} />
+            <FlowButton label="Parse CVs" onClick={() => setScreen("parsing")} />
+            <FlowButton label="Score & rank" onClick={() => setScreen("screening")} />
+            <FlowButton label="Decide" onClick={() => setScreen("screening")} />
+            <FlowButton label="Notify" onClick={() => setScreen("notifications")} />
           </div>
         </div>
 
-        <div className="mt-5 grid gap-5 xl:grid-cols-[1fr_380px]">
-          <div className="space-y-4">
-            {applicants.map((applicant, index) => (
-              <CandidateCard
-                applicant={applicant}
-                key={applicant.id}
-                rank={index + 1}
-                selectApplicant={viewApplicant}
-                updateApplicantStatus={updateApplicantStatus}
-              />
-            ))}
-          </div>
-          <aside className="space-y-5">
-            <AnalyticsPanel applicants={allApplicants} />
-            <ExportPanel
-              applicants={allApplicants}
-              exportReady={exportReady}
-              reportFilter={reportFilter}
-              setExportReady={setExportReady}
-              setReportFilter={setReportFilter}
+        <div className="mt-5 space-y-3">
+          {applicants.map((applicant, index) => (
+            <CandidateCard
+              applicant={applicant}
+              key={applicant.id}
+              rank={index + 1}
+              selectApplicant={viewApplicant}
+              updateApplicantStatus={updateApplicantStatus}
             />
-          </aside>
+          ))}
         </div>
+
+        <ExportPanel
+          applicants={allApplicants}
+          exportReady={exportReady}
+          reportFilter={reportFilter}
+          setExportReady={setExportReady}
+          setReportFilter={setReportFilter}
+        />
       </div>
     </section>
   );
@@ -1613,43 +1631,35 @@ function CandidateCard({
     .slice(0, 2);
 
   return (
-    <article className="rounded-[22px] border border-zinc-100 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="flex min-w-0 gap-4">
-          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-zinc-50 text-sm font-black text-zinc-500">
+    <article className="rounded-[22px] border border-zinc-100 bg-white p-4 shadow-sm transition hover:shadow-md">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-zinc-50 text-xs font-black text-zinc-500">
             #{rank}
           </div>
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-zinc-100 text-sm font-black text-zinc-600">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-zinc-100 text-sm font-black text-zinc-600">
             {initials}
           </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <button
-                className="text-left text-lg font-black tracking-tight text-zinc-950 hover:text-violet-700"
+                className="text-left font-black tracking-tight text-zinc-950 hover:text-violet-700"
                 onClick={() => selectApplicant(applicant.id)}
               >
                 {applicant.name}
               </button>
               <Pill className={statusTone[applicant.status]}>{statusLabels[applicant.status]}</Pill>
+              <Pill className={parserTone[applicant.parsedProfile.parsingStatus]}>
+                {parsingLabels[applicant.parsedProfile.parsingStatus]}
+              </Pill>
             </div>
-            <p className="mt-1 text-sm text-zinc-600">{applicant.email}</p>
-            <p className="mt-2 text-sm text-zinc-500">
-              {applicant.location} - {applicant.parsedProfile.experienceYears} years - {applicant.source}
+            <p className="mt-1 text-sm text-zinc-500">
+              {applicant.email} - {applicant.parsedProfile.experienceYears} years - {applicant.source}
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {applicant.parsedProfile.skills.slice(0, 4).map((skill) => (
-                <span className="rounded-full bg-zinc-50 px-3 py-1 text-xs font-semibold text-zinc-700" key={skill}>
-                  {skill}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-3 xl:items-end">
-          <Pill className={parserTone[applicant.parsedProfile.parsingStatus]}>
-            {parsingLabels[applicant.parsedProfile.parsingStatus]}
-          </Pill>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <p className="text-sm text-zinc-500">
             Match score: <span className={`text-base font-black ${scoreClass(score)}`}>{score}%</span>
           </p>
@@ -1664,25 +1674,11 @@ function CandidateCard({
               </option>
             ))}
           </select>
-        </div>
-      </div>
-
-      <div className="mt-5 flex flex-col gap-3 border-t border-zinc-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <button
-          className="w-fit text-sm font-semibold text-zinc-700 underline-offset-4 hover:text-violet-700 hover:underline"
-          onClick={() => selectApplicant(applicant.id)}
-        >
-          View profile
-        </button>
-        <div className="flex flex-wrap gap-2">
-          <button className="h-9 rounded-xl bg-violet-50 px-3 text-sm font-semibold text-violet-700" onClick={() => updateApplicantStatus(applicant.id, "needs_review")}>
-            Mark review
-          </button>
-          <button className="h-9 rounded-xl bg-emerald-50 px-3 text-sm font-semibold text-emerald-700" onClick={() => updateApplicantStatus(applicant.id, "shortlisted")}>
-            Shortlist
-          </button>
-          <button className="h-9 rounded-xl border border-zinc-200 px-3 text-sm font-semibold text-zinc-600" onClick={() => updateApplicantStatus(applicant.id, "rejected")}>
-            Reject
+          <button
+            className="h-10 rounded-xl bg-zinc-950 px-4 text-sm font-semibold text-white"
+            onClick={() => selectApplicant(applicant.id)}
+          >
+            Review
           </button>
         </div>
       </div>
@@ -1737,77 +1733,6 @@ function ScreeningFilters({
   );
 }
 
-function ReportingFilters({
-  applicants,
-  parsingFilter,
-  query,
-  setParsingFilter,
-  setQuery,
-  setStatusFilter,
-  setThreshold,
-  statusFilter,
-  threshold,
-}: {
-  applicants: Applicant[];
-  parsingFilter: ParsingFilter;
-  query: string;
-  setParsingFilter: (status: ParsingFilter) => void;
-  setQuery: (query: string) => void;
-  setStatusFilter: (status: StatusFilter) => void;
-  setThreshold: (threshold: number) => void;
-  statusFilter: StatusFilter;
-  threshold: number;
-}) {
-  return (
-    <aside className="bg-white p-4 sm:p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-black">Filters</h2>
-        <button
-          className="text-sm font-semibold text-violet-700"
-          onClick={() => {
-            setQuery("");
-            setStatusFilter("all");
-            setParsingFilter("all");
-            setThreshold(75);
-          }}
-        >
-          Clear all
-        </button>
-      </div>
-      <div className="mt-7 space-y-8">
-        <Field label="Search keywords">
-          <input className="ui-input" onChange={(event) => setQuery(event.target.value)} placeholder="Name, skill, source..." value={query} />
-        </Field>
-        <FilterGroup title="Status">
-          <FilterCheck active={statusFilter === "all"} count={applicants.length} label="All" onClick={() => setStatusFilter("all")} />
-          {applicationStatuses.map((status) => (
-            <FilterCheck
-              active={statusFilter === status}
-              count={applicants.filter((applicant) => applicant.status === status).length}
-              key={status}
-              label={statusLabels[status]}
-              onClick={() => setStatusFilter(status)}
-            />
-          ))}
-        </FilterGroup>
-        <FilterGroup title="Parsing">
-          <FilterCheck active={parsingFilter === "all"} count={applicants.length} label="All parser states" onClick={() => setParsingFilter("all")} />
-          {parsingStatuses.map((status) => (
-            <FilterCheck
-              active={parsingFilter === status}
-              count={applicants.filter((applicant) => applicant.parsedProfile.parsingStatus === status).length}
-              key={status}
-              label={parsingLabels[status]}
-              onClick={() => setParsingFilter(status)}
-            />
-          ))}
-        </FilterGroup>
-        <ThresholdInput setThreshold={setThreshold} threshold={threshold} />
-      </div>
-    </aside>
-  );
-}
-
 function AnalyticsPanel({ applicants }: { applicants: Applicant[] }) {
   const scoreBands = [
     { label: "85-100", count: applicants.filter((applicant) => totalScore(applicant.scores) >= 85).length },
@@ -1826,11 +1751,11 @@ function AnalyticsPanel({ applicants }: { applicants: Applicant[] }) {
   }, {});
 
   return (
-    <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-black tracking-tight">Analytics panel</h2>
-      <div className="mt-5 space-y-4">
+    <div>
+      <h3 className="text-sm font-black uppercase tracking-wide text-zinc-500">Analytics</h3>
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {scoreBands.map((band) => (
-          <div key={band.label}>
+          <div className="rounded-2xl bg-zinc-50 p-4" key={band.label}>
             <div className="flex items-center justify-between text-sm">
               <span className="font-semibold">{band.label}</span>
               <span className="font-black">{band.count}</span>
@@ -1841,7 +1766,7 @@ function AnalyticsPanel({ applicants }: { applicants: Applicant[] }) {
           </div>
         ))}
       </div>
-      <div className="mt-5 space-y-2">
+      <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {Object.entries(sourceCounts).map(([source, count]) => (
           <div className="flex items-center justify-between rounded-2xl bg-zinc-50 p-3 text-sm" key={source}>
             <span className="font-semibold">{source}</span>
@@ -1849,7 +1774,7 @@ function AnalyticsPanel({ applicants }: { applicants: Applicant[] }) {
           </div>
         ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -1867,38 +1792,48 @@ function ExportPanel({
   setReportFilter: (filter: ReportFilter) => void;
 }) {
   return (
-    <section className="rounded-[28px] border border-zinc-100 bg-white p-6 shadow-sm">
-      <h2 className="text-xl font-black tracking-tight">Export preview</h2>
-      <div className="mt-4 grid gap-3">
-        <Field label="Date range">
-          <select className="ui-input bg-white" value={reportFilter.dateRange} onChange={(event) => setReportFilter({ ...reportFilter, dateRange: event.target.value as ReportFilter["dateRange"] })}>
-            <option value="7d">Last 7 days</option>
-            <option value="30d">Last 30 days</option>
-            <option value="90d">Last 90 days</option>
-          </select>
-        </Field>
-        <Field label={`Minimum score: ${reportFilter.minimumScore}`}>
-          <input className="h-11 w-full accent-violet-600" max="95" min="40" onChange={(event) => setReportFilter({ ...reportFilter, minimumScore: Number(event.target.value) })} type="range" value={reportFilter.minimumScore} />
-        </Field>
+    <details className="mt-5 rounded-[28px] border border-zinc-100 bg-white p-5 shadow-sm">
+      <summary className="cursor-pointer text-xl font-black tracking-tight">Reports and analytics</summary>
+      <div className="mt-5 grid gap-6 xl:grid-cols-[1fr_360px]">
+        <AnalyticsPanel applicants={applicants} />
+        <div className="rounded-2xl bg-zinc-50 p-4">
+          <h3 className="text-sm font-black uppercase tracking-wide text-zinc-500">Export preview</h3>
+          <div className="mt-4 grid gap-3">
+            <Field label="Date range">
+              <select className="ui-input bg-white" value={reportFilter.dateRange} onChange={(event) => setReportFilter({ ...reportFilter, dateRange: event.target.value as ReportFilter["dateRange"] })}>
+                <option value="7d">Last 7 days</option>
+                <option value="30d">Last 30 days</option>
+                <option value="90d">Last 90 days</option>
+              </select>
+            </Field>
+            <Field label="Minimum score">
+              <select className="ui-input bg-white" onChange={(event) => setReportFilter({ ...reportFilter, minimumScore: Number(event.target.value) })} value={reportFilter.minimumScore}>
+                {[50, 60, 70, 75, 80, 85, 90].map((value) => (
+                  <option key={value} value={value}>{value}% and up</option>
+                ))}
+              </select>
+            </Field>
+          </div>
+          <div className="mt-4 space-y-2">
+            {applicants
+              .filter((applicant) => totalScore(applicant.scores) >= reportFilter.minimumScore)
+              .slice(0, 4)
+              .map((applicant) => (
+                <div className="flex items-center justify-between rounded-2xl bg-white p-3 text-sm" key={applicant.id}>
+                  <span className="font-semibold">{applicant.name}</span>
+                  <span className="font-black">{totalScore(applicant.scores)}%</span>
+                </div>
+              ))}
+          </div>
+          <button className="mt-4 h-10 w-full rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white" onClick={() => setExportReady(true)}>
+            Export report
+          </button>
+          <p className={`mt-4 text-sm font-semibold ${exportReady ? "text-emerald-700" : "text-zinc-500"}`}>
+            {exportReady ? "PDF and Excel export preview generated." : "No real file generated in frontend-only v1."}
+          </p>
+        </div>
       </div>
-      <div className="mt-4 space-y-2">
-        {applicants
-          .filter((applicant) => totalScore(applicant.scores) >= reportFilter.minimumScore)
-          .slice(0, 4)
-          .map((applicant) => (
-            <div className="flex items-center justify-between rounded-2xl bg-zinc-50 p-3 text-sm" key={applicant.id}>
-              <span className="font-semibold">{applicant.name}</span>
-              <span className="font-black">{totalScore(applicant.scores)}%</span>
-            </div>
-          ))}
-      </div>
-      <button className="mt-4 h-10 w-full rounded-xl bg-violet-600 px-4 text-sm font-semibold text-white" onClick={() => setExportReady(true)}>
-        Export report
-      </button>
-      <p className={`mt-4 text-sm font-semibold ${exportReady ? "text-emerald-700" : "text-zinc-500"}`}>
-        {exportReady ? "PDF and Excel export preview generated." : "No real file generated in frontend-only v1."}
-      </p>
-    </section>
+    </details>
   );
 }
 
