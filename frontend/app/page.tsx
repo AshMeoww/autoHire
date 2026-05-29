@@ -483,8 +483,8 @@ function AppShell({
                 A
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-lg font-black tracking-tight sm:text-xl">AutoMotion</span>
-                <span className="block truncate text-xs text-zinc-500">Application Screening System</span>
+                <span className="block truncate text-lg font-black tracking-tight sm:text-xl">AutoHire</span>
+                <span className="block truncate text-xs text-zinc-500">Recruitment Management System with Applicant Screening</span>
               </span>
             </button>
 

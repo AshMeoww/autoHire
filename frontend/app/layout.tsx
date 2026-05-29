@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "AutoMotion Screening Prototype",
-  description: "Phase 1 applicant screening prototype",
+  title: "AutoHire: Recruitment Management System with Applicant Screening",
+  description: "Recruitment management system with applicant screening prototype",
 };
 
 export default function RootLayout({
